@@ -63,9 +63,10 @@ public class Path {
         Node next_node = null;
         List<Arc> successors = new ArrayList<Arc>();
     
-        while(i<nodes.size() && current_Node != nodes.get(nodes.size()-1)){
+        while(i<nodes.size()){
 
             if (i>1){
+                nodes.remove(i);
                 successors = current_Node.getSuccessors();
                 minimum = Float.MAX_VALUE;
                 for (j = 0 ; j<current_Node.getNumberOfSuccessors();j++){
