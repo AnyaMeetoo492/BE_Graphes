@@ -35,7 +35,7 @@ public class Path {
     public static Path createFastestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+        
         return new Path(graph, arcs);
     }
 
@@ -56,7 +56,33 @@ public class Path {
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+
+        int k=0, j, i =0;
+        float minimum;
+        Node current_Node = nodes.get(i);
+        Node next_node = null;
+        List<Arc> successors = new ArrayList<Arc>();
+    
+        while(i<nodes.size() && current_Node != nodes.get(nodes.size()-1)){
+
+            if (i>1){
+                successors = current_Node.getSuccessors();
+                minimum = Float.MAX_VALUE;
+                for (j = 0 ; j<current_Node.getNumberOfSuccessors();j++){
+                    if (nodes.contains(successors.get(j).getOrigin()) && nodes.contains(successors.get(j).getDestination()) && successors.get(j).getLength()<minimum){
+                        k = j;
+                        minimum = successors.get(j).getLength();
+                        next_node = successors.get(j).getDestination();
+                    }
+                }
+                
+                arcs.add(successors.get(k));
+                current_Node = next_node;
+                
+            }
+
+        }
+        
         return new Path(graph, arcs);
     }
 
@@ -201,8 +227,19 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public boolean isValid() {
-        // TODO:
-        return false;
+        
+        boolean valid = true;
+        int i = 0;
+        while(valid && i<this.size()){
+            if (i>2){
+                if (this.arcs.get(i-1).getDestination()!=this.arcs.get(i).getOrigin()){
+                    valid = false;
+                }
+            }
+            i++;
+        }
+            
+        return valid;
     }
 
     /**
@@ -213,8 +250,13 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public float getLength() {
-        // TODO:
-        return 0;
+
+        float total_length=0;
+        for (int i=0; i<this.size();i++){
+            total_length+=this.arcs.get(i).getLength();
+        }
+
+        return total_length;
     }
 
     /**
@@ -226,10 +268,17 @@ public class Path {
      *         kilometers-per-hour).
      * 
      * @deprecated Need to be implemented.
+     * 
      */
     public double getTravelTime(double speed) {
-        // TODO:
-        return 0;
+
+        double total_time=0.00;
+        for (int i=0; i<this.size();i++){
+            total_time+=this.arcs.get(i).getTravelTime(speed);
+        }
+
+        return total_time;
+        
     }
 
     /**
@@ -241,8 +290,13 @@ public class Path {
      * @deprecated Need to be implemented.
      */
     public double getMinimumTravelTime() {
-        // TODO:
-        return 0;
+
+        double min_time=0.00;
+        for (int i=0; i<this.size();i++){
+            min_time+=this.arcs.get(i).getMinimumTravelTime();
+        }
+
+        return min_time;
     }
 
 }
