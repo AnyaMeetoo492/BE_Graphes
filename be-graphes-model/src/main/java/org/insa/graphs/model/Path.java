@@ -36,6 +36,55 @@ public class Path {
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
         
+        
+        // int k=0, j, i =0;
+        // float minimum;
+        Node current_Node;
+        Node next_node;
+        // List<Arc> successors = new ArrayList<Arc>();
+
+        if (nodes.size()==1){
+            return new Path(graph,nodes.get(0));
+            // arcs.add(nodes.get(0));
+        }
+        
+        for(int i=0; i<nodes.size()-1; i++){
+
+            current_Node = nodes.get(i);
+            next_node = nodes.get(i+1);
+            // successors = current_Node.getSuccessors();
+            // minimum = Float.MAX_VALUE;
+
+            Arc fastestarc = null;
+
+
+            for (Arc arc : current_Node.getSuccessors()){
+                // j = 0 ; j<current_Node.getNumberOfSuccessors();j++
+                if (arc.getDestination()==next_node){
+                    if (fastestarc == null){
+                        // k = j;
+                        // minimum = successors.get(j).getLength();
+                        fastestarc = arc;
+                    }
+                
+                    else{
+                        if (arc.getMinimumTravelTime() < fastestarc.getMinimumTravelTime()){
+                            // k = j;
+                            // minimum = successors.get(j).getLength();
+                            // next_node = successors.get(j).getDestination();
+                            fastestarc = arc;
+                        }
+                    }
+                }
+            }
+
+            if (fastestarc == null){
+                throw new IllegalArgumentException("two consecutive nodes in the list are not connected in the graph.");
+            }
+                
+            arcs.add(fastestarc);
+        }
+        
         return new Path(graph, arcs);
     }
 
@@ -55,33 +104,55 @@ public class Path {
      */
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
+
         List<Arc> arcs = new ArrayList<Arc>();
 
-        int k=0, j, i =0;
-        float minimum;
-        Node current_Node = nodes.get(i);
-        Node next_node = null;
-        List<Arc> successors = new ArrayList<Arc>();
-    
-        while(i<nodes.size()){
+        // int k=0, j, i =0;
+        // float minimum;
+        Node current_Node;
+        Node next_node;
+        // List<Arc> successors = new ArrayList<Arc>();
 
-            if (i>1){
-                nodes.remove(i);
-                successors = current_Node.getSuccessors();
-                minimum = Float.MAX_VALUE;
-                for (j = 0 ; j<current_Node.getNumberOfSuccessors();j++){
-                    if (nodes.contains(successors.get(j).getOrigin()) && nodes.contains(successors.get(j).getDestination()) && successors.get(j).getLength()<minimum){
-                        k = j;
-                        minimum = successors.get(j).getLength();
-                        next_node = successors.get(j).getDestination();
+        if (nodes.size()==1){
+            return new Path(graph,nodes.get(0));
+            // arcs.add(nodes.get(0));
+        }
+        
+        for(int i=0; i<nodes.size()-1; i++){
+
+            current_Node = nodes.get(i);
+            next_node = nodes.get(i+1);
+            // successors = current_Node.getSuccessors();
+            // minimum = Float.MAX_VALUE;
+
+            Arc shortestarc = null;
+
+
+            for (Arc arc : current_Node.getSuccessors()){
+                // j = 0 ; j<current_Node.getNumberOfSuccessors();j++
+                if (arc.getDestination()==next_node){
+                    if (shortestarc == null){
+                        // k = j;
+                        // minimum = successors.get(j).getLength();
+                        shortestarc = arc;
+                    }
+                
+                    else{
+                        if (arc.getLength() < shortestarc.getLength()){
+                            // k = j;
+                            // minimum = successors.get(j).getLength();
+                            // next_node = successors.get(j).getDestination();
+                            shortestarc = arc;
+                        }
                     }
                 }
-                
-                arcs.add(successors.get(k));
-                current_Node = next_node;
-                
             }
 
+            if (shortestarc == null){
+                throw new IllegalArgumentException("two consecutive nodes in the list are not connected in the graph.");
+            }
+                
+            arcs.add(shortestarc);
         }
         
         return new Path(graph, arcs);
@@ -231,13 +302,12 @@ public class Path {
         
         boolean valid = true;
         int i = 0;
-        while(valid && i<this.size()){
-            if (i>2){
-                if (this.arcs.get(i-1).getDestination()!=this.arcs.get(i).getOrigin()){
-                    valid = false;
-                }
+
+       
+        for (i=0;i<this.arcs.size()-1;i++){
+            if (this.arcs.get(i).getDestination()!=this.arcs.get(i+1).getOrigin()){
+                valid = false;
             }
-            i++;
         }
             
         return valid;
@@ -253,7 +323,7 @@ public class Path {
     public float getLength() {
 
         float total_length=0;
-        for (int i=0; i<this.size();i++){
+        for (int i=0; i<this.arcs.size();i++){
             total_length+=this.arcs.get(i).getLength();
         }
 
@@ -273,13 +343,12 @@ public class Path {
      */
     public double getTravelTime(double speed) {
 
-        double total_time=0.00;
-        for (int i=0; i<this.size();i++){
-            total_time+=this.arcs.get(i).getTravelTime(speed);
-        }
+        // //double total_time = 0;
+        // for (int i=0; i<this.size();i++){
+        //     total_time+=this.arcs.get(i).getTravelTime(speed);
+        // }
+        return this.getLength() / (speed*1000/3600);
 
-        return total_time;
-        
     }
 
     /**
@@ -292,10 +361,13 @@ public class Path {
      */
     public double getMinimumTravelTime() {
 
-        double min_time=0.00;
-        for (int i=0; i<this.size();i++){
-            min_time+=this.arcs.get(i).getMinimumTravelTime();
+        double min_time = 0;
+
+        for (Arc arc : this.getArcs()){
+            min_time+= arc.getLength()/arc.getRoadInformation().getMaximumSpeed();
         }
+        
+        min_time = min_time*3600/1000;
 
         return min_time;
     }
