@@ -5,7 +5,7 @@ import org.insa.graphs.algorithm.ArcInspector;
 import org.insa.graphs.model.Graph;
 import org.insa.graphs.model.Node;
 
-public class ShortestPathData extends AbstractInputData {
+public class  ShortestPathData extends AbstractInputData {
 
     // Origin and destination nodes.
     private final Node origin, destination;
