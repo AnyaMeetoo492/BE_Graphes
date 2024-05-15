@@ -13,4 +13,6 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
         return new LabelStar(sommet_courant, marque, cout_realise, pere, this.getInputData());
     }
 
+    
+
 }
