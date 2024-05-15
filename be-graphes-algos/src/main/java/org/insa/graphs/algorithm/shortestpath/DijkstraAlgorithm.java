@@ -57,11 +57,16 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
         pile.insert(maplabel.get(data.getOrigin()));
 
-        
-        while (!pile.isEmpty()){
+        boolean reached = false;
+
+        while (!pile.isEmpty() && !reached){
 
             Label currentLabel = pile.deleteMin();
             currentLabel.setmarque(true);
+
+            if (currentLabel.getsommet_node() == data.getDestination()){
+                reached = true;
+            }
 
             notifyNodeMarked(currentLabel.getsommet_node());
             
