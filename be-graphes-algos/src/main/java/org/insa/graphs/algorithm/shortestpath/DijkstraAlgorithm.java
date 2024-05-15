@@ -27,6 +27,10 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         super(data);
     }
 
+    public Label ChangeLabel(Node sommet_courant, boolean marque, double cout_realise, Node pere){
+        return new Label(sommet_courant, marque, cout_realise, pere);
+    }
+
     @Override
     protected ShortestPathSolution doRun() {
         final ShortestPathData data = getInputData();
@@ -48,7 +52,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
         // association nodes a un label
         maplabel= new HashMap<>();
-        Label originlabel = new Label(data.getOrigin(), false, 0, null);
+        Label originlabel = this.ChangeLabel(data.getOrigin(), false, 0, null);
         maplabel.put(data.getOrigin(), originlabel);
 
         pile.insert(maplabel.get(data.getOrigin()));
@@ -82,7 +86,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                 notifyNodeReached(succ.getDestination());
 
                 if (newDistance<d){
-                    Label newdest = new Label(succ.getDestination(), found, newDistance, succ.getOrigin());
+                    Label newdest = this.ChangeLabel(succ.getDestination(), found, newDistance, succ.getOrigin());
 
                     maplabel.put(succ.getDestination(), newdest);
                     if (prochain != null){
