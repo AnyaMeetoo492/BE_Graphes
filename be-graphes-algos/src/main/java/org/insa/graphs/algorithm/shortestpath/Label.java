@@ -44,9 +44,12 @@ public class Label implements Comparable<Label> {
     }
 
     public int compareTo(Label l){
-        if (l == this){
-            return 0;
+        if (l.getCost() > this.getCost()){
+            return -1;
         }
-        return 1;
+        else if (l.getCost() < this.getCost()){
+            return 1;
+        }
+        return 0;
     }
 }

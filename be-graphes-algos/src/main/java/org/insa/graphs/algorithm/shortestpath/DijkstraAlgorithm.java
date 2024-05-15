@@ -2,7 +2,10 @@ package org.insa.graphs.algorithm.shortestpath;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+
+import javax.management.RuntimeErrorException;
 
 import org.insa.graphs.algorithm.AbstractInputData;
 import org.insa.graphs.algorithm.AbstractSolution.Status;
@@ -50,48 +53,75 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
         pile.insert(maplabel.get(data.getOrigin()));
 
-        while (!found && !pile.isEmpty()){
+        
+        while (!pile.isEmpty()){
 
             Label currentLabel = pile.deleteMin();
             currentLabel.setmarque(true);
 
-            double d = Double.POSITIVE_INFINITY;
+            notifyNodeMarked(currentLabel.getsommet_node());
             
             for(Arc succ : currentLabel.getsommet_node().getSuccessors()){
-                Label prochain = new Label(succ.getDestination(), false, data.getCost(succ) + currentLabel.getCost(), currentLabel.getsommet_node());
-                if (prochain.getsommet_node() == data.getDestination()){
-                    found = true;
-                    d = data.getCost(succ);
+
+                Label prochain = maplabel.get(succ.getDestination());
+
+                if (maplabel.containsKey(succ.getDestination())&& prochain.getmarque()){
+                    continue;
                 }
-                else{
-                    if (!prochain.getmarque()){
-                        pile.insert(maplabel.get(prochain.getsommet_node()));
-                        if (data.getCost(succ)<d){
-                            d = data.getCost(succ);
-                        }
+
+                double d = Double.POSITIVE_INFINITY;
+
+                if (prochain != null){
+
+                    d = prochain.getCost();
+
+                }
+
+                double cost = data.getCost(succ);
+                double newDistance = currentLabel.getCost() + cost;
+                notifyNodeReached(succ.getDestination());
+
+                if (newDistance<d){
+                    Label newdest = new Label(succ.getDestination(), found, newDistance, succ.getOrigin());
+
+                    maplabel.put(succ.getDestination(), newdest);
+                    if (prochain != null){
+                        pile.remove(prochain);
                     }
-                }
-                predecessorArcs[succ.getDestination().getId()] = succ;
-                
+                    pile.insert(newdest);
+                } 
             }
         }
+        Label destlabel = maplabel.get(data.getDestination());
+         
+        
 
-        if (!found){
+        if (destlabel == null){
+
             solution = new ShortestPathSolution(data, Status.INFEASIBLE);
         }
         else{
+
             notifyDestinationReached(data.getDestination());
 
-            // Create the path from the array of predecessors...
             ArrayList<Arc> arcs = new ArrayList<>();
-            Arc arc = predecessorArcs[data.getDestination().getId()];
-            while (arc != null) {
-                arcs.add(arc);
-                arc = predecessorArcs[arc.getOrigin().getId()];
-            }
+            Label currentlabel = destlabel;
 
-            // Reverse the path...
-            Collections.reverse(arcs);
+            // Create the path from the array of predecessors...
+            while (currentlabel.getsommet_node() != data.getOrigin()) {
+                Label label = currentlabel;
+
+                Node father = currentlabel.getpere();
+                Arc arc = father.getSuccessors().stream().filter(succ -> succ.getDestination() == label.getsommet_node()).min(Comparator.comparingDouble(data::getCost)).orElse(null);
+
+
+                if (arc == null){
+                    throw new RuntimeException("no arc found");
+                }
+
+                arcs.add(0, arc);
+                currentlabel = maplabel.get(father);
+            }
 
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
