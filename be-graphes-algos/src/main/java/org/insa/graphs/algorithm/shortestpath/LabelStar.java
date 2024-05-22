@@ -18,7 +18,23 @@ public class LabelStar extends Label {
       // + cout du point jusqu'à la destination
 
       double cout_depuis_origine = this.getcout_realise();
-      double cout_jusqua_destination = this.getsommet_node().getPoint().distanceTo(this.data.getDestination().getPoint());
-      return cout_depuis_origine + cout_jusqua_destination;
+      return cout_depuis_origine;
     }
+
+    @Override
+    public int compareTo(Label l){
+      // COMPARE betweeen 
+      //cost from origin to l to destination and 
+      //cost from origin to current label to destination
+      
+      double total_l = l.getCost() + this.getsommet_node().getPoint().distanceTo(this.data.getDestination().getPoint());
+      double total_this = this.getCost() + this.getsommet_node().getPoint().distanceTo(this.data.getDestination().getPoint());
+      if (total_l > total_this){
+          return -1;
+      }
+      else if (total_l < total_this){
+          return 1;
+      }
+      return 0;
+  }
   }
