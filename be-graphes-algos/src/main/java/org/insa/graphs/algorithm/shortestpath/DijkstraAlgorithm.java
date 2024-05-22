@@ -1,7 +1,7 @@
 package org.insa.graphs.algorithm.shortestpath;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Comparator;
+//import java.util.Comparator;
 import java.util.Map;
 import org.insa.graphs.algorithm.AbstractSolution.Status;
 import org.insa.graphs.algorithm.utils.BinaryHeap;
@@ -109,11 +109,15 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
                 List<Arc> successorsOfPere = pere.getSuccessors(); // get successors of father
 
-                // Let's find out if current node exists in the list of successors of father
+                // find link between one/more fathers and find the arc with minimum cost
                 Arc arcfound = null;
+                double mininumcost = Double.POSITIVE_INFINITY; 
                 for (Arc successorArcPere : successorsOfPere){ // visit all successors of father
                     if (successorArcPere.getDestination() == label.getsommet_node()){ // if equal to current node
-                        arcfound = successorArcPere; // found the arc
+                        if (label.getCost()<mininumcost){
+                            mininumcost = label.getCost();
+                            arcfound = successorArcPere; // found the arc
+                        }
                     }
                 } 
 
@@ -121,6 +125,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                     throw new RuntimeException("no arc found");
                 }
 
+                ///////////////////////////////////////////
                 // Arc arc = pere.getSuccessors().stream()
                 //         .filter(successorArc -> successorArc.getDestination() == label.getsommet_node())
                 //         .min(Comparator.comparingDouble(data::getCost)).orElse(null);
