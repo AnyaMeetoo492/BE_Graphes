@@ -1,144 +1,112 @@
 package org.insa.graphs.algorithm.shortestpath;
-import java.util.List;
+
 import java.util.ArrayList;
-//import java.util.Comparator;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+import javax.management.RuntimeErrorException;
+import org.insa.graphs.algorithm.AbstractInputData;
 import org.insa.graphs.algorithm.AbstractSolution.Status;
+import org.insa.graphs.algorithm.ArcInspector;
 import org.insa.graphs.algorithm.utils.BinaryHeap;
 import org.insa.graphs.model.Arc;
 import org.insa.graphs.model.Graph;
 import org.insa.graphs.model.Node;
 import org.insa.graphs.model.Path;
-
+import java.util.Map;
 import java.util.HashMap;
 
 public class DijkstraAlgorithm extends ShortestPathAlgorithm {
+  private Map<Node, Label> maplabel;
 
-    private Map<Node, Label> maplabel; // MAP : linking node with label
+  public DijkstraAlgorithm(ShortestPathData data) {
+    super(data);
+  }
 
-    // CONSTRUCTOR
-    public DijkstraAlgorithm(ShortestPathData data) {
-        super(data);
-    }
+  public Label ChangeLabel(Node sommet_courant, boolean marque, double cout_realise, Node pere) {
+    return new Label(sommet_courant, marque, cout_realise, pere);
+  }
 
-    // LABELLING NODES
-    public Label ChangeLabel(Node sommet_courant, boolean marque, double cout_realise, Node pere) {
-        return new Label(sommet_courant, marque, cout_realise, pere);
-    }
+  @Override
+  protected ShortestPathSolution doRun() {
+    final ShortestPathData data = getInputData();
+    ShortestPathSolution solution = null;
+    BinaryHeap<Label> pile = new BinaryHeap<>();
+    boolean found = false;
+    // Retrieve the graph.
+    Graph graph = data.getGraph();
+    final int nbNodes = graph.size();
+    // Notify observers about the first event (origin processed).
+    notifyOriginProcessed(data.getOrigin());
+    // Initialize array of predecessors.
+    Arc[] predecessorArcs = new Arc[nbNodes];
+    // association nodes a un label
+    maplabel = new HashMap<>();
+    Label originlabel = this.ChangeLabel(data.getOrigin(), false, 0, null);
+    maplabel.put(data.getOrigin(), originlabel);
 
-    // ALGORITHM TO FIND SHORTEST PATH
-    @Override
-    protected ShortestPathSolution doRun() {
-        final ShortestPathData data = getInputData();
-        ShortestPathSolution solution = null;
-        BinaryHeap<Label> pile = new BinaryHeap<>();
+    pile.insert(maplabel.get(data.getOrigin()));
 
-        boolean reached = false; // if Shortest Path found
+    boolean reached = false;
 
-        // Retrieve the graph.
-        Graph graph = data.getGraph();
-        maplabel = new HashMap<>(); // Create a map
+    while (!pile.isEmpty() && !reached) {
 
-        // Notify observers about the first event (origin processed).
-        notifyOriginProcessed(data.getOrigin());
+      Label currentLabel = pile.deleteMin();
+      currentLabel.setmarque(true);
 
-        // association nodes a un label
-        Label originlabel = this.ChangeLabel(data.getOrigin(), false, 0, null); // first node
-        maplabel.put(data.getOrigin(), originlabel); // Insert in map first node
+      if (currentLabel.getsommet_node() == data.getDestination()) {
+        reached = true;
+      }
 
-        pile.insert(maplabel.get(data.getOrigin())); // Insert the origin in stack 
+      notifyNodeMarked(currentLabel.getsommet_node());
 
-        while (!pile.isEmpty() && !reached) { // until all nodes are processed or shorstest path found
+      for (Arc succ : currentLabel.getsommet_node().getSuccessors()) {
 
-            Label currentLabel = pile.deleteMin(); // take mininum from the stack
-            currentLabel.setmarque(true); // marked as processed true
-
-            notifyNodeMarked(currentLabel.getsommet_node()); // notify node marked
-
-            if (currentLabel.getsommet_node() == data.getDestination()) { // if destination reached
-                reached = true; // shortest path found true
-            }
-
-            for (Arc successorArc : currentLabel.getsommet_node().getSuccessors()) { // find all successors arcs of current node
-                // NOTE : succ is an arc with (origin, destination) = (currentnode, successorsOfCurrentNode)
-                Label currentSucc = maplabel.get(successorArc.getDestination()); // take a successor
-                notifyNodeReached(successorArc.getDestination()); // notify current node reached
-
-                if (maplabel.containsKey(successorArc.getDestination()) && currentSucc.getmarque()) { //if already processed = already in map and marked
-                    continue; // skip for this step of the for loop
-                }
-
-                double currentCost = Double.POSITIVE_INFINITY; 
-
-                if (currentSucc != null) { // if successor exists, find cost
-                    currentCost = currentSucc.getCost();
-                }
-
-                double costArc = data.getCost(successorArc); // cost arc from current node to successor
-                double newDistance = currentLabel.getCost() + costArc; // calculating new distance = costprevious + arc 
-
-                if (newDistance < currentCost) { // if path is shortest to current node
-                    
-                    Label newdest = this.ChangeLabel(successorArc.getDestination(), reached, newDistance, successorArc.getOrigin());
-
-                    maplabel.put(successorArc.getDestination(), newdest); // Add (node,label) to map
-                    if (currentSucc != null) { // if successor exists
-                        pile.remove(currentSucc); // remove from stack
-                    }
-                    pile.insert(newdest); // add new label to stack
-                }
-            }
+        Label prochain = maplabel.get(succ.getDestination());
+        if (maplabel.containsKey(succ.getDestination()) && prochain.getmarque()) {
+          continue;
         }
-        Label destlabel = maplabel.get(data.getDestination()); // get destination label
-
-        if (destlabel == null) { // if destination doesn't exist
-            solution = new ShortestPathSolution(data, Status.INFEASIBLE); // SOLUTION DOES NOT EXIST
-        } 
-        else { // if destination exists
-
-            notifyDestinationReached(data.getDestination()); // notify destination reached
-
-            ArrayList<Arc> arcsShortestPath = new ArrayList<>(); // List of new arcs for shortest path
-
-            Label currentlabel = destlabel; // start at destination
-
-            // Create the path in reverse direction (destination to origin)
-            while (currentlabel.getsommet_node() != data.getOrigin()) { // until orgin is reached
-                Label label = currentlabel; // get new point 
-                Node pere = currentlabel.getpere(); // find father of current point
-
-                List<Arc> successorsOfPere = pere.getSuccessors(); // get successors of father
-
-                // find link between one/more fathers and find the arc with minimum cost
-                Arc arcfound = null;
-                double mininumcost = Double.POSITIVE_INFINITY; 
-                for (Arc successorArcPere : successorsOfPere){ // visit all successors of father
-                    if (successorArcPere.getDestination() == label.getsommet_node()){ // if equal to current node
-                        if (label.getCost()<mininumcost){
-                            mininumcost = label.getCost();
-                            arcfound = successorArcPere; // found the arc
-                        }
-                    }
-                } 
-
-                if (arcfound == null) { // if no arc is found
-                    throw new RuntimeException("no arc found");
-                }
-
-                ///////////////////////////////////////////
-                // Arc arc = pere.getSuccessors().stream()
-                //         .filter(successorArc -> successorArc.getDestination() == label.getsommet_node())
-                //         .min(Comparator.comparingDouble(data::getCost)).orElse(null);
-
-                arcsShortestPath.add(0, arcfound);
-                currentlabel = maplabel.get(pere); // switch to father node now (next node)
-            }
-
-            // Create the final solution.
-            solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcsShortestPath));
+        double d = Double.POSITIVE_INFINITY;
+        if (prochain != null) {
+          d = prochain.getCost();
         }
-
-        return solution;
+        double cost = data.getCost(succ);
+        double newDistance = currentLabel.getCost() + cost;
+        notifyNodeReached(succ.getDestination());
+        if (newDistance < d) {
+          Label newdest = this.ChangeLabel(succ.getDestination(), found, newDistance, succ.getOrigin());
+          maplabel.put(succ.getDestination(), newdest);
+          if (prochain != null) {
+            pile.remove(prochain);
+          }
+          pile.insert(newdest);
+        }
+      }
     }
+    Label destlabel = maplabel.get(data.getDestination());
 
+    if (destlabel == null) {
+      solution = new ShortestPathSolution(data, Status.INFEASIBLE);
+    } else {
+      notifyDestinationReached(data.getDestination());
+      ArrayList<Arc> arcs = new ArrayList<>();
+      Label currentlabel = destlabel;
+      // Create the path from the array of predecessors...
+      while (currentlabel.getsommet_node() != data.getOrigin()) {
+        Label label = currentlabel;
+        Node father = currentlabel.getpere();
+        Arc arc = father.getSuccessors().stream().filter(succ -> succ.getDestination() == label.getsommet_node())
+            .min(Comparator.comparingDouble(data::getCost)).orElse(null);
+        if (arc == null) {
+          throw new RuntimeException("no arc found");
+        }
+        arcs.add(0, arc);
+        currentlabel = maplabel.get(father);
+      }
+      // Create the final solution.
+      solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
+    }
+    return solution;
+  }
 }
