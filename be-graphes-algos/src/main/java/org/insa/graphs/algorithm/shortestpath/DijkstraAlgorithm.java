@@ -1,7 +1,7 @@
 package org.insa.graphs.algorithm.shortestpath;
 import java.util.List;
 import java.util.ArrayList;
-//import java.util.Comparator;
+import java.util.Collections;
 import java.util.Map;
 import org.insa.graphs.algorithm.AbstractSolution.Status;
 import org.insa.graphs.algorithm.utils.BinaryHeap;
@@ -57,6 +57,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
             if (currentLabel.getsommet_node() == data.getDestination()) { // if destination reached
                 reached = true; // shortest path found true
+                continue;
             }
 
             for (Arc successorArc : currentLabel.getsommet_node().getSuccessors()) { // find all successors arcs of current node
@@ -71,11 +72,11 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                 double currentCost = Double.POSITIVE_INFINITY; 
 
                 if (currentSucc != null) { // if successor exists, find cost
-                    currentCost = currentSucc.getCost();
+                    currentCost = currentSucc.getCost(); // cost of successor associated by label
                 }
 
                 double costArc = data.getCost(successorArc); // cost arc from current node to successor
-                double newDistance = currentLabel.getCost() + costArc; // calculating new distance = costprevious + arc 
+                double newDistance = currentLabel.getCost() + costArc; // calculating new distance = cost father + cost of arc 
 
                 if (newDistance < currentCost) { // if path is shortest to current node
                     
@@ -109,7 +110,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
                 List<Arc> successorsOfPere = pere.getSuccessors(); // get successors of father
 
-                // find link between one/more fathers and find the arc with minimum cost
+                // find arc between the father with  minimum cost
+                // BECAUSE can exists multiple arcs linking father to current
                 Arc arcfound = null;
                 double mininumcost = Double.POSITIVE_INFINITY; 
                 for (Arc successorArcPere : successorsOfPere){ // visit all successors of father
@@ -125,14 +127,12 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                     throw new RuntimeException("no arc found");
                 }
 
-                ///////////////////////////////////////////
-                // Arc arc = pere.getSuccessors().stream()
-                //         .filter(successorArc -> successorArc.getDestination() == label.getsommet_node())
-                //         .min(Comparator.comparingDouble(data::getCost)).orElse(null);
-
                 arcsShortestPath.add(0, arcfound);
                 currentlabel = maplabel.get(pere); // switch to father node now (next node)
             }
+
+            // Reverse the path...(origin to destination)
+            Collections.reverse(arcsShortestPath);
 
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcsShortestPath));
