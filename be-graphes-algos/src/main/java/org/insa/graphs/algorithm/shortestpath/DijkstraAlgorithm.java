@@ -1,7 +1,6 @@
 package org.insa.graphs.algorithm.shortestpath;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Map;
 import org.insa.graphs.algorithm.AbstractSolution.Status;
 import org.insa.graphs.algorithm.utils.BinaryHeap;
@@ -32,6 +31,10 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final ShortestPathData data = getInputData();
         ShortestPathSolution solution = null;
         BinaryHeap<Label> pile = new BinaryHeap<>();
+
+        if(data.getOrigin() == data.getDestination() ) { // if same node
+            return new ShortestPathSolution(data, Status.INFEASIBLE); // SOLUTION DOES NOT EXIST
+        }
 
         boolean reached = false; // if Shortest Path found
 
@@ -80,7 +83,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
                 if (newDistance < currentCost) { // if path is shortest to current node
                     
-                    Label newdest = this.ChangeLabel(successorArc.getDestination(), reached, newDistance, successorArc.getOrigin());
+                    Label newdest = this.ChangeLabel(successorArc.getDestination(), false, newDistance, successorArc.getOrigin());
 
                     maplabel.put(successorArc.getDestination(), newdest); // Add (node,label) to map
                     if (currentSucc != null) { // if successor exists
@@ -92,7 +95,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         }
         Label destlabel = maplabel.get(data.getDestination()); // get destination label
 
-        if (destlabel == null) { // if destination doesn't exist
+        if (destlabel == null || data.getOrigin() == data.getDestination() ) { // if destination doesn't exist
             solution = new ShortestPathSolution(data, Status.INFEASIBLE); // SOLUTION DOES NOT EXIST
         } 
         else { // if destination exists
@@ -130,9 +133,6 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
                 arcsShortestPath.add(0, arcfound);
                 currentlabel = maplabel.get(pere); // switch to father node now (next node)
             }
-
-            // Reverse the path...(origin to destination)
-            Collections.reverse(arcsShortestPath);
 
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcsShortestPath));

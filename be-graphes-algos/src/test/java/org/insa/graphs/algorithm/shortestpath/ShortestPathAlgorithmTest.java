@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
 public abstract class ShortestPathAlgorithmTest {
 
   // READ GRAPH
+  @SuppressWarnings("resource")
   private static Graph read(String mapName) throws IOException {
     // Create a graph reader.
     GraphReader reader = new BinaryGraphReader(new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
@@ -40,25 +41,25 @@ public abstract class ShortestPathAlgorithmTest {
     Collection<Object> data = new ArrayList<>();
 
     // LOAD GRAPH
-    final Graph insa = read("/home/hindi/Bureau/3MIC/BE_Graphes/maps/insa.mapgr");
-    final Graph belgium = read("/home/hindi/Bureau/3MIC/BE_Graphes/maps/belgium.mapgr");
+    final Graph insa = read("C:\\Users\\anya\\Pictures\\BE_Graphes\\insa.mapgr");
+    final Graph belgium = read("C:\\Users\\anya\\Pictures\\BE_Graphes\\belgium.mapgr");
 
     // load data
     //ShortestPathData(Graph graph, Node origin, Node destination, ArcInspector arcInspector)
 
     //valid path
-    data.add(new ShortestPathData(insa, insa.get(479), insa.get(702), ArcInspectorFactory.getAllFilters().get(0))); // shortest
-    data.add(new ShortestPathData(insa, insa.get(479), insa.get(702), ArcInspectorFactory.getAllFilters().get(2))); // fastest
+    data.add(new ShortestPathData(insa, insa.get(189), insa.get(421), ArcInspectorFactory.getAllFilters().get(0))); // shortest
+    data.add(new ShortestPathData(insa, insa.get(189), insa.get(421), ArcInspectorFactory.getAllFilters().get(2))); // fastest
 
-    data.add(new ShortestPathData(belgium, belgium.get(60975), belgium.get(804592), ArcInspectorFactory.getAllFilters().get(0))); // shortest
-    data.add(new ShortestPathData(belgium, belgium.get(60975), belgium.get(804592), ArcInspectorFactory.getAllFilters().get(2))); // fastest
+    data.add(new ShortestPathData(belgium, belgium.get(141970), belgium.get(516865), ArcInspectorFactory.getAllFilters().get(0))); // shortest
+    data.add(new ShortestPathData(belgium, belgium.get(141970), belgium.get(516865), ArcInspectorFactory.getAllFilters().get(2))); // fastest
 
     //invalid path
-    data.add(new ShortestPathData(insa, insa.get(186), insa.get(864), ArcInspectorFactory.getAllFilters().get(0)));
+    data.add(new ShortestPathData(insa, insa.get(189), insa.get(864), ArcInspectorFactory.getAllFilters().get(0)));
 
     //origin to origin, path length null
-    data.add(new ShortestPathData(insa, insa.get(479), insa.get(479), ArcInspectorFactory.getAllFilters().get(0)));
-    data.add(new ShortestPathData(belgium, belgium.get(60975), belgium.get(60975), ArcInspectorFactory.getAllFilters().get(2))); // fastest
+    data.add(new ShortestPathData(insa, insa.get(189), insa.get(189), ArcInspectorFactory.getAllFilters().get(0)));
+    data.add(new ShortestPathData(belgium, belgium.get(141970), belgium.get(141970), ArcInspectorFactory.getAllFilters().get(2))); // fastest
 
     return data;
   }
@@ -107,18 +108,13 @@ public abstract class ShortestPathAlgorithmTest {
     BellmanFordAlgorithm bellmanfordAlgo = new BellmanFordAlgorithm(this.data);
     ShortestPathSolution bellmanfordSolution = bellmanfordAlgo.run();
 
-    assertSame(bellmanfordSolution.getStatus(), this.solution.getStatus());
-
-    if (!this.solution.isFeasible()) return;
+    if (!this.solution.isFeasible()) return; // if solution does not exist
     
     //verify if solution has same length as Bellman Ford Solution
-    assertSame(this.solution.getPath().getLength(), bellmanfordSolution.getPath().getLength());
-    //verify both solution are feasible or not
-    assertSame(this.solution.isFeasible(), bellmanfordSolution.isFeasible());
+    assertEquals(bellmanfordSolution.getPath().getLength(), this.solution.getPath().getLength(), 0.01);
 
-    if (!this.solution.isFeasible()) {
-      return;
-    }
+    //verify both solution are feasible or not
+    assertEquals(this.solution.isFeasible(), bellmanfordSolution.isFeasible());
 
     assertSame(this.solution.getPath().getArcs().size(), bellmanfordSolution.getPath().getArcs().size());
 

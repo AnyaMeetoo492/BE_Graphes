@@ -319,12 +319,14 @@ public class Path {
      */
     public float getLength() {
 
-        float total_length=0;
-        for (int i=0; i<this.arcs.size();i++){
-            total_length+=this.arcs.get(i).getLength();
-        }
+        return this.arcs.stream().map(Arc::getLength).reduce(0.0f, Float::sum);
 
-        return total_length;
+        // float total_length=0;
+        // for (int i=0; i<this.arcs.size();i++){
+        //     total_length+=this.arcs.get(i).getLength();
+        // }
+
+        // return total_length;
     }
 
     /**
