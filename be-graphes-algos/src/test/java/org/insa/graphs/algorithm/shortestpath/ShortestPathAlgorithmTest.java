@@ -40,8 +40,8 @@ public abstract class ShortestPathAlgorithmTest {
     Collection<Object> data = new ArrayList<>();
 
     // LOAD GRAPH
-    final Graph insa = read("C:/Users/anya/Pictures/BE_Graphes/insa.mapgr");
-    final Graph belgium = read("C:/Users/anya/Pictures/BE_Graphes/belgium.mapgr");
+    final Graph insa = read("/home/hindi/Bureau/3MIC/BE_Graphes/maps/insa.mapgr");
+    final Graph belgium = read("/home/hindi/Bureau/3MIC/BE_Graphes/maps/belgium.mapgr");
 
     // load data
     //ShortestPathData(Graph graph, Node origin, Node destination, ArcInspector arcInspector)
