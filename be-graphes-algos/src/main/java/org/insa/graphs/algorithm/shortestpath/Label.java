@@ -1,8 +1,5 @@
 package org.insa.graphs.algorithm.shortestpath;
 
-import org.insa.graphs.algorithm.AbstractInputData;
-import org.insa.graphs.algorithm.ArcInspector;
-import org.insa.graphs.model.Graph;
 import org.insa.graphs.model.Node;
 
 public class Label implements Comparable<Label> {
