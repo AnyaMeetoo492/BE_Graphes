@@ -1,20 +1,28 @@
-import org.junit.Test;
+package org.insa.graphs.algorithm.shortestpath;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-
-import java.beans.Transient;
-import java.io.IOException;
-import java.util.Collection;
-
-import org.insa.graphs.algorithm.ArcInspector;
+//import org.insa.graphs.algorithm.AbstractInputData;
 import org.insa.graphs.algorithm.ArcInspectorFactory;
-import org.insa.graphs.algorithm.shortestpath.AStarAlgorithm;
-import org.insa.graphs.algorithm.shortestpath.BellmanFordAlgorithm;
-import org.insa.graphs.algorithm.shortestpath.ShortestPathAlgorithm;
-import org.insa.graphs.algorithm.shortestpath.ShortestPathData;
-import org.insa.graphs.algorithm.shortestpath.ShortestPathSolution;
+//import org.insa.graphs.algorithm.utils.PriorityQueue;
+//import org.insa.graphs.algorithm.utils.PriorityQueueTest;
 import org.insa.graphs.model.Graph;
+//import org.insa.graphs.model.Path;
+import org.insa.graphs.model.io.BinaryGraphReader;
+import org.insa.graphs.model.io.GraphReader;
+//import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+//import java.util.List;
+
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public abstract class ShortestPathAlgorithmTest {
@@ -27,13 +35,13 @@ public abstract class ShortestPathAlgorithmTest {
   }
 
   // GET DATA
-  @Parameterized.Parameter
+  @Parameterized.Parameters
   public static Collection<Object> data() throws IOException{
     Collection<Object> data = new ArrayList<>();
 
     // LOAD GRAPH
-    final Graph insa = read("C:/Users/anya/Pictures/BE_Graphes/insa.mapgr");
-    final Graph belgium = read("C:/Users/anya/Pictures/BE_Graphes/belgium.mapgr");
+    final Graph insa = read("/home/hindi/Bureau/3MIC/BE_Graphes/maps/insa.mapgr");
+    final Graph belgium = read("/home/hindi/Bureau/3MIC/BE_Graphes/maps/belgium.mapgr");
 
     // load data
     //ShortestPathData(Graph graph, Node origin, Node destination, ArcInspector arcInspector)
@@ -46,7 +54,7 @@ public abstract class ShortestPathAlgorithmTest {
     data.add(new ShortestPathData(belgium, belgium.get(60975), belgium.get(804592), ArcInspectorFactory.getAllFilters().get(2))); // fastest
 
     //invalid path
-    data.add(new ShortestPathData(insa, insa.get(186)), insa.get(864), ArcInspectorFactory.getAllFilters().get(0));
+    data.add(new ShortestPathData(insa, insa.get(186), insa.get(864), ArcInspectorFactory.getAllFilters().get(0)));
 
     //origin to origin, path length null
     data.add(new ShortestPathData(insa, insa.get(479), insa.get(479), ArcInspectorFactory.getAllFilters().get(0)));
@@ -65,7 +73,7 @@ public abstract class ShortestPathAlgorithmTest {
   private ShortestPathSolution solution;
 
 
-  @BeforeClass
+  @Before
   public void init(){
     this.algo = this.createAlgorithm(this.data);
     this.solution = this.algo.run();
@@ -80,13 +88,13 @@ public abstract class ShortestPathAlgorithmTest {
   //Verify that origin solution is origin data given
   @Test
   public void VerifyOrigin(){
-    assertEquals(this.data.getOrigin(), this.solution.getInputData.getOrigin());
+    assertEquals(this.data.getOrigin(), this.solution.getInputData().getOrigin());
   }
 
   //Verify that destination solution is destination data given
   @Test
   public void VerifyDestination(){
-    assertEquals(this.data.getDestination(), this.solution.getInputData.getDestination());
+    assertEquals(this.data.getDestination(), this.solution.getInputData().getDestination());
   }
 
   //Verify that solution is equal to solution given by Bellman Ford Algorithm
@@ -100,7 +108,7 @@ public abstract class ShortestPathAlgorithmTest {
 
     if (this.solution.isFeasible()){
       //verify if solution has same length as Bellman Ford Solution
-      assertEquals(this.solution.getPath().getLength(), bellmanfordSolution.getPath().getLength());
+      assertSame(this.solution.getPath().getLength(), bellmanfordSolution.getPath().getLength());
       assertSame(this.solution.getPath().getArcs().size(), bellmanfordSolution.getPath().getArcs().size());
 
       //Verify that each arc of soltion is the same as arc of Bellman Ford Solution
