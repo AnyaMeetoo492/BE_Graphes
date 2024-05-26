@@ -66,18 +66,17 @@ public abstract class ShortestPathAlgorithmTest {
   // Retrive Algo from data given
   public abstract ShortestPathAlgorithm createAlgorithm(ShortestPathData data);
 
-  @Parameterized.Parameter
-  private ShortestPathData data;
-  
-  private ShortestPathAlgorithm algo;
-  private ShortestPathSolution solution;
-
-
   @Before
   public void init(){
     this.algo = this.createAlgorithm(this.data);
     this.solution = this.algo.run();
   }
+
+  public ShortestPathAlgorithm algo;
+  private ShortestPathSolution solution;
+
+  @Parameterized.Parameter
+  public ShortestPathData data;
 
   //Verify that solution path is valid
   @Test
